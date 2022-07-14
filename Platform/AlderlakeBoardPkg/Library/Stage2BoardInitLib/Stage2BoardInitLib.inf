@@ -31,6 +31,8 @@
   LowPowerSupport.h
   AcpiPlatform.c
   CpuInfoLib.c
+  SioChip.c
+  SioChip.h
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -63,6 +65,7 @@
   BdatLib
   IgdOpRegionLib
   HeciLib
+  HeciMeExtLib
   VtdLib
   PsdLib
   MeExtMeasurementLib
@@ -77,6 +80,7 @@
   gOsConfigDataGuid
   gFspVariableNvDataHobGuid
   gCpuInitDataHobGuid
+  gCsmePerformanceInfoGuid
 
 [Pcd]
   gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseAddress
@@ -112,6 +116,7 @@
   gPlatformModuleTokenSpaceGuid.PcdFastBootEnabled
   gPlatformCommonLibTokenSpaceGuid.PcdTccEnabled
   gPlatformModuleTokenSpaceGuid.PcdEnablePciePm
+  gPlatformCommonLibTokenSpaceGuid.PcdBootPerformanceMask
 
 [FixedPcd]
   gPlatformAlderLakeTokenSpaceGuid.PcdAdlLpSupport

@@ -40,6 +40,7 @@
 #define CPU_PCIE_DT_HALO_MAX_ROOT_PORT     3
 #define CPU_PCIE_ULT_ULX_MAX_ROOT_PORT     3
 #define MAX_TCSS_USB3_PORTS                4
+#define TURBO_RATIO_LIMIT_ARRAY_SIZE       8
 
 
 //
@@ -205,6 +206,82 @@ SI_PCH_DEVICE_INTERRUPT_CONFIG mPchPDevIntConfig[] = {
   //{16, 3, SiPchIntD, 19}  // ISH: FPAK - Not present
 };
 
+//
+// This table contains data on INTx and IRQ for PCH-N
+//
+SI_PCH_DEVICE_INTERRUPT_CONFIG mPchNDevIntConfig[] = {
+//  {31, 0, PchNoInt, 0}, // LPC/eSPI Interface, doesn't use interrupts
+//  {31, 1, PchNoInt, 0}, // P2SB, doesn't use interrupts
+//  {31, 2, PchNoInt, 0}, // PMC , doesn't use interrupts
+  {31, 3, SiPchIntA, 16}, // cAVS(Audio, Voice, Speach), INTA is default, programmed in PciCfgSpace 3Dh
+  {31, 4, SiPchIntA, 16}, // SMBus Controller, no default value, programmed in PciCfgSpace 3Dh
+//  {31, 5, PchNoInt, 0}, // SPI , doesn't use interrupts
+  {31, 7, SiPchIntA, 16}, // TraceHub, INTA is default, RO register
+  {30, 0, SiPchIntA, 16}, // SerialIo: UART #0 and TSN #0
+  {30, 1, SiPchIntB, 17}, // SerialIo: UART #1 and TSN #1
+  {30, 2, SiPchIntC, 36}, // SerialIo: SPI #0, INTA is default, programmed in PCR[SERIALIO] + PCICFGCTRL[10]
+  {30, 3, SiPchIntD, 37}, // SerialIo: SPI #1, INTA is default, programmed in PCR[SERIALIO] + PCICFGCTRL[11]
+//  {30, 6, SiPchIntA, 17}, // Reserved for HPET
+//  {30, 7, SiPchIntB, 18}, // Reserved for IOAPIC
+  {28, 0, SiPchIntA, 16}, // PCI Express Port 1, INT is default, programmed in PciCfgSpace + FCh
+  {28, 1, SiPchIntB, 17}, // PCI Express Port 2, INT is default, programmed in PciCfgSpace + FCh
+  {28, 2, SiPchIntC, 18}, // PCI Express Port 3, INT is default, programmed in PciCfgSpace + FCh
+  {28, 3, SiPchIntD, 19}, // PCI Express Port 4, INT is default, programmed in PciCfgSpace + FCh
+  {26, 0, SiPchIntA, 16}, // SCS: eMMC //ADLN specific
+  {25, 2, SiPchIntC, 42}, // SerialIo UART Controller #2, INTA is default, programmed in PCR[SERIALIO] + PCICFGCTRL[9]
+//  {24, 0, 0, 0}, // Reserved (used by RST PCIe Storage Cycle Router)
+  {23, 0, SiPchIntA, 16}, // SATA Controller, INTA is default, programmed in PciCfgSpace + 3Dh
+  {22, 0, SiPchIntA, 16}, // CSME: HECI #1
+  {22, 1, SiPchIntB, 17}, // CSME: HECI #2
+  {22, 4, SiPchIntA, 16}, // CSME: HECI #3
+  {22, 5, SiPchIntD, 19}, // CSME: HECI #4
+//  {22, 7, SiPchIntA, 16}, // CSME: WLAN
+  {21, 0, SiPchIntA, 27}, // SerialIo I2C Controller #0, INTA is default, programmed in PCR[SERIALIO] + PCICFGCTRL[1]
+  {21, 1, SiPchIntB, 40}, // SerialIo I2C Controller #1, INTA is default, programmed in PCR[SERIALIO] + PCICFGCTRL[2]
+                        //   Note: To avoid interrupt conflict with TPM reserved interrupt (28), changing SerialIo I2C #1 interrupt value to 40.
+  {21, 2, SiPchIntC, 29}, // SerialIo I2C Controller #2, INTA is default, programmed in PCR[SERIALIO] + PCICFGCTRL[3]
+  {21, 3, SiPchIntD, 33}, // SerialIo I2C Controller #3, INTA is default, programmed in PCR[SERIALIO] + PCICFGCTRL[4] //ADLN specific
+//  {21, 7, SiPchIntA, 16}, // Northpeak Phantom (ACPI) Dunction - not exposed to OS
+  {20, 0, SiPchIntA, 16}, // USB 3.0 xHCI Controller, no default value, programmed in PciCfgSpace 3Dh
+  {20, 1, SiPchIntB, 17}, // USB Device Controller (OTG)
+  {20, 3, SiPchIntA, 16}, // CNVi WiFi
+  //{20, 2, PchNoInt, 0}, // Shared SRAM, no interrupts
+//  {20, 4, 0, 0}, // TraceHub Phantom (ACPI) Function
+//  {18, 2, PchNoInt, 0}, // CSME: PMT,  doesn't use interrupts
+//  {18, 4, 0, 0}  // CSME: fTPM DMA
+  {19, 0, SiPchIntA, 20}, // SerialIo: SPI #3
+//  {19, 1, SiPchIntB, 24}, // SerialIo: SPI #4
+  {18, 0, SiPchIntA, 26}, // Integrated Sensor Hub
+  {18, 6, SiPchIntB, 39}, // SerialIo: SPI #2, INTA is default, programmed in PCR[SERIALIO] + PCICFGCTRL[12]
+  {17, 0, SiPchIntA, 25}, // SerialIo: UART #3
+  {17, 1, SiPchIntB, 35}, // SerialIo: UART #4
+  {17, 2, SiPchIntC, 28}, // SerialIo: UART #5
+  {17, 3, SiPchIntD, 34}, // SerialIo: UART #6
+  {16, 0, SiPchIntC, 18}, // SerialIo: I2C #6
+  {16, 1, SiPchIntD, 19}, // SerialIo: I2C #7
+//  {16, 5, SiPchIntC, 18}, // IEH
+  {16, 6, SiPchIntA, 23}, // THC #0
+  {16, 7, SiPchIntB, 22}, // THC #1
+  // Starting from here is for all Lp series: mPchLpOnlyDevIntConfig which includes N as well
+  {31, 6, SiPchIntA, 16}, // GbE Controller, INTA is default, programmed in PciCfgSpace 3Dh
+  {30, 4, SiPchIntA, 16}, // TSN Controller, INTA is default, programmed in PCR[TSN] + PCICFGCTRL[29]
+  {29, 0, SiPchIntA, 16}, // PCI Express Port 9, INT is default, programmed in PciCfgSpace + FCh
+  {29, 1, SiPchIntB, 17}, // PCI Express Port 10, INT is default, programmed in PciCfgSpace + FCh
+  {29, 2, SiPchIntC, 18}, // PCI Express Port 11, INT is default, programmed in PciCfgSpace + FCh
+  {29, 3, SiPchIntD, 19}, // PCI Express Port 12, INT is default, programmed in PciCfgSpace + FCh
+  {28, 4, SiPchIntA, 16}, // PCI Express Port 5, INT is default, programmed in PciCfgSpace + FCh
+  {28, 5, SiPchIntB, 17}, // PCI Express Port 6, INT is default, programmed in PciCfgSpace + FCh
+  {28, 6, SiPchIntC, 18}, // PCI Express Port 7, INT is default, programmed in PciCfgSpace + FCh
+  {28, 7, SiPchIntD, 19}, // PCI Express Port 8, INT is default, programmed in PciCfgSpace + FCh
+  {25, 0, SiPchIntA, 31}, // SerialIo I2C Controller #4, INTA is default, programmed in PCR[SERIALIO] + PCICFGCTRL[5]
+  {25, 1, SiPchIntB, 32}, // SerialIo I2C Controller #5, INTA is default, programmed in PCR[SERIALIO] + PCICFGCTRL[6]
+  {22, 2, SiPchIntC, 18}, // CSME: IDE-Redirection (IDE-R)
+  {22, 3, SiPchIntD, 19}, // CSME: Keyboard and Text (KT) Redirection
+  {19, 1, SiPchIntB, 21}, // SerialIo: SPI #4
+  {19, 2, SiPchIntC, 24}, // SerialIo: SPI #5 (LP)
+  {19, 3, SiPchIntD, 38}, // SerialIo: SPI #6 (LP)
+  {18, 7, SiPchIntC, 18}  // SCS: UFS
+};
 /**
   Return CPU Family ID
 
@@ -470,6 +547,10 @@ UpdateFspConfig (
     DEBUG ((DEBUG_INFO, "Pch-P is detected\n"));
     FspsConfig->DevIntConfigPtr   = (UINT32)(UINTN)mPchPDevIntConfig;
     FspsConfig->NumOfDevIntConfig = sizeof (mPchPDevIntConfig) / sizeof (SI_PCH_DEVICE_INTERRUPT_CONFIG);
+  } else if (IsPchN ()) {
+    DEBUG ((DEBUG_INFO, "Pch-N is detected\n"));
+    FspsConfig->DevIntConfigPtr   = (UINT32)(UINTN)mPchNDevIntConfig;
+    FspsConfig->NumOfDevIntConfig = sizeof (mPchNDevIntConfig) / sizeof (SI_PCH_DEVICE_INTERRUPT_CONFIG);
   } else {
     DEBUG ((DEBUG_ERROR, "Unsupported PCH.\n"));
   }
@@ -640,6 +721,12 @@ UpdateFspConfig (
     FspsConfig->EnableTimedGpio1 = SiCfgData->EnableTimedGpio1;
     FspsConfig->PchPmSlpAMinAssert = SiCfgData->PchPmSlpAMinAssert;
 
+    // UFS
+    if (IsPchLp ()) {
+      FspsConfig->UfsEnable[0] = SiCfgData->PchUfsEnable[0];
+      FspsConfig->UfsEnable[1] = SiCfgData->PchUfsEnable[1];
+    }
+
     // When fast boot is enabled, program SLP_A_MIN_ASST_WDTH to 0
     // to reduce boottime.
     if (PcdGetBool (PcdFastBootEnabled)) {
@@ -647,7 +734,7 @@ UpdateFspConfig (
     }
 
     // TSN feature support
-    if (IsPchS ()) {
+    if (IsPchS () || IsPchN () ) {
       FspsConfig->PchTsnEnable = SiCfgData->PchTsnEnable;
       if(SiCfgData->PchTsnEnable == 1) {
         FspsConfig->PchTsnMultiVcEnable = SiCfgData->PchTsnMultiVcEnable;
@@ -668,6 +755,7 @@ UpdateFspConfig (
           FspsConfig->PchTsn1MacAddressHigh = TsnSubRegion->MacConfigData.Port[1].MacAddr.U32MacAddr[1];
           FspsConfig->PchTsn1MacAddressLow  = TsnSubRegion->MacConfigData.Port[1].MacAddr.U32MacAddr[0];
 
+         DEBUG ((DEBUG_ERROR, "TSN MAC subregion completed %r\n", Status));
         } else {
           DEBUG ((DEBUG_ERROR, "TSN MAC subregion not found! %r\n", Status));
         }
@@ -707,6 +795,7 @@ UpdateFspConfig (
   // PCH Flash protection
   FspsConfig->PchPwrOptEnable             = 0x1;
   FspsConfig->PchWriteProtectionEnable[0] = 0x0;
+  FspsConfig->PchWriteProtectionEnable[1] = 0x0;
   FspsConfig->PchProtectedRangeLimit[0]   = 0x1fff;
   FspsConfig->PchProtectedRangeBase[0]    = 0x1070;
 
@@ -769,6 +858,7 @@ UpdateFspConfig (
       FspsConfig->EnableItbm = 0;
       FspsConfig->EnableTimedGpio0 = 0;
       FspsConfig->EnableTimedGpio1 = 0;
+      FspsConfig->PchLanEnable = 0x0;
       ZeroMem (FspsConfig->PchIshI2cEnable, sizeof (FspsConfig->PchIshI2cEnable));
       ZeroMem (FspsConfig->PchIshGpEnable, sizeof (FspsConfig->PchIshGpEnable));
       DEBUG ((DEBUG_INFO, "Stage 2 S0ix config applied.\n"));
@@ -807,7 +897,7 @@ UpdateFspConfig (
   }
 
   FspsConfig->AmtEnabled = 0x0;
-  FspsConfig->VccInAuxImonSlope = 0x64;
+  FspsConfig->VccInAuxImonSlope = 0x6f;
 
   PowerCfgData = (POWER_CFG_DATA *) FindConfigDataByTag (CDATA_POWER_TAG);
   if (PowerCfgData == NULL) {
@@ -919,6 +1009,14 @@ UpdateFspConfig (
      FspsConfig->CstateLatencyControl3Irtl     = PowerCfgData->CstateLatencyControl3Irtl;
      FspsConfig->CstateLatencyControl4Irtl     = PowerCfgData->CstateLatencyControl4Irtl;
      FspsConfig->CstateLatencyControl5Irtl     = PowerCfgData->CstateLatencyControl5Irtl;
+
+    // Cpu power related settings
+    for (Index = 0; Index < TURBO_RATIO_LIMIT_ARRAY_SIZE; Index++) {
+      FspsConfig->TurboRatioLimitRatio[Index] = PowerCfgData->TurboRatioLimitRatio[Index];
+      FspsConfig->TurboRatioLimitNumCore[Index] = PowerCfgData->TurboRatioLimitNumCore[Index];
+      FspsConfig->AtomTurboRatioLimitRatio[Index] = PowerCfgData->AtomTurboRatioLimitRatio[Index];
+      FspsConfig->AtomTurboRatioLimitNumCore[Index] = PowerCfgData->AtomTurboRatioLimitNumCore[Index];
+    }
   }
 
   FspsConfig->TdcTimeWindow[0] = 0x3e8;
@@ -932,30 +1030,6 @@ UpdateFspConfig (
     FspsConfig->ThcIdleLtr[1] = 0xffffffff;
     FspsConfig->ThcHidResetPadTrigger[1] = 0x0;
     FspsConfig->ThcHidConnectionSpeed[1] = 0x1036640;
-    FspsConfig->TurboRatioLimitRatio[0] = 0x0;
-    FspsConfig->TurboRatioLimitRatio[1] = 0x0;
-    FspsConfig->TurboRatioLimitRatio[2] = 0x0;
-    FspsConfig->TurboRatioLimitRatio[3] = 0x0;
-    FspsConfig->TurboRatioLimitRatio[4] = 0x0;
-    FspsConfig->TurboRatioLimitRatio[5] = 0x0;
-    FspsConfig->TurboRatioLimitRatio[6] = 0x0;
-    FspsConfig->TurboRatioLimitRatio[7] = 0x0;
-    FspsConfig->TurboRatioLimitNumCore[0] = 0x0;
-    FspsConfig->TurboRatioLimitNumCore[1] = 0x0;
-    FspsConfig->TurboRatioLimitNumCore[2] = 0x0;
-    FspsConfig->TurboRatioLimitNumCore[3] = 0x0;
-    FspsConfig->TurboRatioLimitNumCore[4] = 0x0;
-    FspsConfig->TurboRatioLimitNumCore[5] = 0x0;
-    FspsConfig->TurboRatioLimitNumCore[6] = 0x0;
-    FspsConfig->TurboRatioLimitNumCore[7] = 0x0;
-    FspsConfig->AtomTurboRatioLimitRatio[0] = 0x0;
-    FspsConfig->AtomTurboRatioLimitRatio[1] = 0x0;
-    FspsConfig->AtomTurboRatioLimitRatio[2] = 0x0;
-    FspsConfig->AtomTurboRatioLimitRatio[3] = 0x0;
-    FspsConfig->AtomTurboRatioLimitRatio[4] = 0x0;
-    FspsConfig->AtomTurboRatioLimitRatio[5] = 0x0;
-    FspsConfig->AtomTurboRatioLimitRatio[6] = 0x0;
-    FspsConfig->AtomTurboRatioLimitRatio[7] = 0x0;
     FspsConfig->AtomTurboRatioLimitNumCore[0] = 0x0;
     FspsConfig->AtomTurboRatioLimitNumCore[1] = 0x0;
     FspsConfig->AtomTurboRatioLimitNumCore[2] = 0x0;
@@ -1015,8 +1089,6 @@ UpdateFspConfig (
     FspsConfig->TdcTimeWindow[0] = 0x3e8;
     FspsConfig->TdcTimeWindow[1] = 0x3e8;
     FspsConfig->PchLockDownBiosLock = 0x1;
-    FspsConfig->UfsEnable[0] = 0x0;
-    FspsConfig->UfsEnable[1] = 0x0;
     FspsConfig->IehMode = 0x0;
     FspsConfig->PortResetMessageEnable[0] = 0x1;
     FspsConfig->PortResetMessageEnable[1] = 0x1;
@@ -1035,32 +1107,7 @@ UpdateFspConfig (
     FspsConfig->IomStayInTCColdSeconds = 0x0;
     FspsConfig->IomBeforeEnteringTCColdSeconds = 0x0;
     FspsConfig->Irms[0] = 0x1;
-    FspsConfig->TurboRatioLimitRatio[0] = 0x30;
-    FspsConfig->TurboRatioLimitRatio[1] = 0x30;
-    FspsConfig->TurboRatioLimitRatio[2] = 0x2d;
-    FspsConfig->TurboRatioLimitRatio[3] = 0x2d;
-    FspsConfig->TurboRatioLimitRatio[4] = 0x2a;
-    FspsConfig->TurboRatioLimitRatio[5] = 0x2a;
-    FspsConfig->TurboRatioLimitRatio[6] = 0x2a;
-    FspsConfig->TurboRatioLimitRatio[7] = 0x2a;
-
-    FspsConfig->AtomTurboRatioLimitRatio[0] = 0x50;
-    FspsConfig->AtomTurboRatioLimitRatio[1] = 0x50;
-    FspsConfig->AtomTurboRatioLimitRatio[2] = 0x50;
-    FspsConfig->AtomTurboRatioLimitRatio[3] = 0x50;
-    FspsConfig->AtomTurboRatioLimitRatio[4] = 0x50;
-    FspsConfig->AtomTurboRatioLimitRatio[5] = 0x50;
-    FspsConfig->AtomTurboRatioLimitRatio[6] = 0x50;
-    FspsConfig->AtomTurboRatioLimitRatio[7] = 0x50;
-    FspsConfig->TurboRatioLimitNumCore[0] = 0x1;
-    FspsConfig->TurboRatioLimitNumCore[1] = 0x2;
-    FspsConfig->TurboRatioLimitNumCore[2] = 0x3;
-    FspsConfig->TurboRatioLimitNumCore[3] = 0x4;
-    FspsConfig->TurboRatioLimitNumCore[4] = 0x5;
-    FspsConfig->TurboRatioLimitNumCore[5] = 0x6;
-    FspsConfig->TurboRatioLimitNumCore[6] = 0x7;
-    FspsConfig->TurboRatioLimitNumCore[7] = 0x8;
-    FspsConfig->AtomTurboRatioLimitNumCore[0] = 0x1;
+    FspsConfig->Irms[1] = 0x1;
     FspsConfig->AtomTurboRatioLimitNumCore[1] = 0x2;
     FspsConfig->AtomTurboRatioLimitNumCore[2] = 0x3;
     FspsConfig->AtomTurboRatioLimitNumCore[3] = 0x4;
@@ -1071,7 +1118,7 @@ UpdateFspConfig (
 
     switch (GetPlatformId ()) {
       case PLATFORM_ID_ADL_P_DDR5_RVP:
-        FspsConfig->Usb4CmMode = 0x0;
+        FspsConfig->Usb4CmMode = 0x1;
         break;
       case PLATFORM_ID_ADL_N_DDR5_CRB:
         FspsConfig->PchLanEnable = 0x0;
@@ -1079,107 +1126,21 @@ UpdateFspConfig (
         FspsConfig->IomStayInTCColdSeconds = 0x0;
         FspsConfig->IomBeforeEnteringTCColdSeconds = 0x0;
         FspsConfig->UsbTcPortEn = 0x3;
-
-        FspsConfig->PcieRpClkReqDetect[0] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[1] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[2] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[3] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[4] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[5] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[6] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[7] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[8] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[9] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[10] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[11] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[0] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[1] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[2] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[3] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[4] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[5] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[6] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[7] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[8] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[9] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[10] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[11] = 0x1;
-        FspsConfig->PcieRpMaxPayload[0] = 0x1;
-        FspsConfig->PcieRpMaxPayload[1] = 0x1;
-        FspsConfig->PcieRpMaxPayload[2] = 0x1;
-        FspsConfig->PcieRpMaxPayload[3] = 0x1;
-        FspsConfig->PcieRpMaxPayload[4] = 0x1;
-        FspsConfig->PcieRpMaxPayload[5] = 0x1;
-        FspsConfig->PcieRpMaxPayload[6] = 0x1;
-        FspsConfig->PcieRpMaxPayload[7] = 0x1;
-        FspsConfig->PcieRpMaxPayload[8] = 0x1;
-        FspsConfig->PcieRpMaxPayload[9] = 0x1;
-        FspsConfig->PcieRpMaxPayload[10] = 0x1;
-        FspsConfig->PcieRpMaxPayload[11] = 0x1;
-        FspsConfig->PcieRpL1Substates[0] = 0x2;
-        FspsConfig->PcieRpL1Substates[1] = 0x2;
-        FspsConfig->PcieRpL1Substates[2] = 0x2;
-        FspsConfig->PcieRpL1Substates[3] = 0x2;
-        FspsConfig->PcieRpL1Substates[4] = 0x2;
-        FspsConfig->PcieRpL1Substates[5] = 0x2;
-        FspsConfig->PcieRpL1Substates[6] = 0x2;
-        FspsConfig->PcieRpL1Substates[7] = 0x2;
-        FspsConfig->PcieRpL1Substates[8] = 0x2;
-        FspsConfig->PcieRpL1Substates[9] = 0x2;
-        FspsConfig->PcieRpL1Substates[10] = 0x2;
-        FspsConfig->PcieRpL1Substates[11] = 0x2;
-        FspsConfig->PcieRpLtrEnable[0] = 0x1;
-        FspsConfig->PcieRpLtrEnable[1] = 0x1;
-        FspsConfig->PcieRpLtrEnable[2] = 0x1;
-        FspsConfig->PcieRpLtrEnable[3] = 0x1;
-        FspsConfig->PcieRpLtrEnable[4] = 0x1;
-        FspsConfig->PcieRpLtrEnable[5] = 0x1;
-        FspsConfig->PcieRpLtrEnable[6] = 0x1;
-        FspsConfig->PcieRpLtrEnable[7] = 0x1;
-        FspsConfig->PcieRpLtrEnable[8] = 0x1;
-        FspsConfig->PcieRpLtrEnable[9] = 0x1;
-        FspsConfig->PcieRpLtrEnable[10] = 0x1;
-        FspsConfig->PcieRpLtrEnable[11] = 0x1;
-
         FspsConfig->CpuPcieRpPmSci[0] = 0x0;
         FspsConfig->CpuPcieRpPmSci[1] = 0x0;
         FspsConfig->CpuPcieRpPmSci[2] = 0x0;
         FspsConfig->CpuPcieRpMaxPayload[0] = 0x0;
         FspsConfig->CpuPcieRpMaxPayload[1] = 0x0;
         FspsConfig->CpuPcieRpMaxPayload[2] = 0x0;
-        FspsConfig->CpuPcieRpAspm[0] = 0x3;
-        FspsConfig->CpuPcieRpAspm[1] = 0x3;
-        FspsConfig->CpuPcieRpAspm[2] = 0x3;
         FspsConfig->CpuPcieRpLtrEnable[0] = 0x0;
         FspsConfig->CpuPcieRpLtrEnable[1] = 0x0;
         FspsConfig->CpuPcieRpLtrEnable[2] = 0x0;
-        FspsConfig->CpuPcieRpMultiVcEnabled[0] = 0x0;
-        FspsConfig->CpuPcieRpMultiVcEnabled[2] = 0x0;
 
-        FspsConfig->PcieRpLtrMaxSnoopLatency[0] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[1] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[2] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[3] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[4] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[5] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[6] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[7] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[8] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[9] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[10] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[11] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[0] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[1] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[2] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[3] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[4] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[5] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[6] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[7] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[8] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[9] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[10] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[11] = 0x1003;
+        for (Index = 0; Index < 4; Index++) {
+          FspsConfig->CpuPcieRpLtrMaxSnoopLatency[Index]   = 0x1003;
+          FspsConfig->CpuPcieRpLtrMaxNoSnoopLatency[Index] = 0x1003;
+        }
+
         FspsConfig->CpuPcieRpGen3Uptp[0] = 0x7;
         FspsConfig->CpuPcieRpGen3Uptp[2] = 0x7;
         FspsConfig->CpuPcieRpGen4Uptp[1] = 0x8;
@@ -1187,6 +1148,28 @@ UpdateFspConfig (
         FspsConfig->CpuPcieRpGen5Uptp[0] = 0x7;
         FspsConfig->CpuPcieRpGen5Uptp[1] = 0x7;
         FspsConfig->CpuPcieRpGen5Uptp[2] = 0x7;
+        FspsConfig->Usb4CmMode = 0x0;
+        FspsConfig->EnergyEfficientTurbo = 0x1;
+        FspsConfig->PsysPmax = 0x0;
+        FspsConfig->CnviBtAudioOffload = 0x1;
+        FspsConfig->IomTypeCPortPadCfg[0] = 0x90e0016;
+        FspsConfig->IomTypeCPortPadCfg[1] = 0x90e0017;
+        FspsConfig->VmdEnable = 1;
+        FspsConfig->Irms[0] = 0x0;
+        FspsConfig->Irms[1] = 0x0;
+        FspsConfig->ThcMode[0] = 1;
+        FspsConfig->ThcMode[1] = 1;
+        FspsConfig->PortResetMessageEnable[1] = 0x0;
+        FspsConfig->PortResetMessageEnable[2] = 0x0;
+        FspsConfig->PortResetMessageEnable[4] = 0x0;
+        FspsConfig->AtomTurboRatioLimitNumCore[1] = 0x0;
+        FspsConfig->AtomTurboRatioLimitNumCore[2] = 0x0;
+        FspsConfig->AtomTurboRatioLimitNumCore[3] = 0x0;
+        FspsConfig->AtomTurboRatioLimitNumCore[4] = 0x0;
+        FspsConfig->AtomTurboRatioLimitNumCore[5] = 0x0;
+        FspsConfig->AtomTurboRatioLimitNumCore[6] = 0x0;
+        FspsConfig->AtomTurboRatioLimitNumCore[7] = 0x0;
+
         break;
       case PLATFORM_ID_ADL_N_LPDDR5_RVP:
         FspsConfig->PchLanEnable = 0x0;
@@ -1195,128 +1178,32 @@ UpdateFspConfig (
         FspsConfig->IomStayInTCColdSeconds = 0x0;
         FspsConfig->IomBeforeEnteringTCColdSeconds = 0x0;
         FspsConfig->UsbTcPortEn = 0x3;
-
         FspsConfig->TdcTimeWindow[1] = 0x3e8;
-        FspsConfig->PcieRpClkReqDetect[0] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[1] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[2] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[3] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[4] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[5] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[6] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[7] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[8] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[9] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[10] = 0x1;
-        FspsConfig->PcieRpClkReqDetect[11] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[0] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[1] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[2] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[3] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[4] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[5] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[6] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[7] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[8] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[9] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[10] = 0x1;
-        FspsConfig->PcieRpAdvancedErrorReporting[11] = 0x1;
-        FspsConfig->PcieRpMaxPayload[0] = 0x1;
-        FspsConfig->PcieRpMaxPayload[1] = 0x1;
-        FspsConfig->PcieRpMaxPayload[2] = 0x1;
-        FspsConfig->PcieRpMaxPayload[3] = 0x1;
-        FspsConfig->PcieRpMaxPayload[4] = 0x1;
-        FspsConfig->PcieRpMaxPayload[5] = 0x1;
-        FspsConfig->PcieRpMaxPayload[6] = 0x1;
-        FspsConfig->PcieRpMaxPayload[7] = 0x1;
-        FspsConfig->PcieRpMaxPayload[8] = 0x1;
-        FspsConfig->PcieRpMaxPayload[9] = 0x1;
-        FspsConfig->PcieRpMaxPayload[10] = 0x1;
-        FspsConfig->PcieRpMaxPayload[11] = 0x1;
-        FspsConfig->PcieRpL1Substates[0] = 0x2;
-        FspsConfig->PcieRpL1Substates[1] = 0x2;
-        FspsConfig->PcieRpL1Substates[2] = 0x2;
-        FspsConfig->PcieRpL1Substates[3] = 0x2;
-        FspsConfig->PcieRpL1Substates[4] = 0x2;
-        FspsConfig->PcieRpL1Substates[5] = 0x2;
-        FspsConfig->PcieRpL1Substates[6] = 0x2;
-        FspsConfig->PcieRpL1Substates[7] = 0x2;
-        FspsConfig->PcieRpL1Substates[8] = 0x2;
-        FspsConfig->PcieRpL1Substates[9] = 0x2;
-        FspsConfig->PcieRpL1Substates[10] = 0x2;
-        FspsConfig->PcieRpL1Substates[11] = 0x2;
-        FspsConfig->PcieRpLtrEnable[0] = 0x1;
-        FspsConfig->PcieRpLtrEnable[1] = 0x1;
-        FspsConfig->PcieRpLtrEnable[2] = 0x1;
-        FspsConfig->PcieRpLtrEnable[3] = 0x1;
-        FspsConfig->PcieRpLtrEnable[4] = 0x1;
-        FspsConfig->PcieRpLtrEnable[5] = 0x1;
-        FspsConfig->PcieRpLtrEnable[6] = 0x1;
-        FspsConfig->PcieRpLtrEnable[7] = 0x1;
-        FspsConfig->PcieRpLtrEnable[8] = 0x1;
-        FspsConfig->PcieRpLtrEnable[9] = 0x1;
-        FspsConfig->PcieRpLtrEnable[10] = 0x1;
-        FspsConfig->PcieRpLtrEnable[11] = 0x1;
-
         FspsConfig->PchPmSlpS3MinAssert = 0x0;
         FspsConfig->PchPmSlpSusMinAssert = 0x0;
-        FspsConfig->PchPmSlpAMinAssert = 0x0;
-
-        FspsConfig->Usb2OverCurrentPin[1] = 0x5;
-        FspsConfig->Usb2OverCurrentPin[2] = 0x3;
-        FspsConfig->Usb2OverCurrentPin[3] = 0x3;
-        FspsConfig->Usb2OverCurrentPin[7] = 0x1;
-
         FspsConfig->PortResetMessageEnable[2] = 0x0;
         FspsConfig->PortResetMessageEnable[4] = 0x0;
         FspsConfig->MeUnconfigOnRtcClear = 0x2;
-
         FspsConfig->CpuPcieRpPmSci[0] = 0x0;
         FspsConfig->CpuPcieRpPmSci[1] = 0x0;
         FspsConfig->CpuPcieRpPmSci[2] = 0x0;
         FspsConfig->CpuPcieRpMaxPayload[0] = 0x0;
         FspsConfig->CpuPcieRpMaxPayload[1] = 0x0;
         FspsConfig->CpuPcieRpMaxPayload[2] = 0x0;
-        FspsConfig->CpuPcieRpAspm[0] = 0x3;
-        FspsConfig->CpuPcieRpAspm[1] = 0x3;
-        FspsConfig->CpuPcieRpAspm[2] = 0x3;
         FspsConfig->CpuPcieRpLtrEnable[0] = 0x0;
         FspsConfig->CpuPcieRpLtrEnable[1] = 0x0;
         FspsConfig->CpuPcieRpLtrEnable[2] = 0x0;
-        FspsConfig->CpuPcieRpMultiVcEnabled[0] = 0x0;
-        FspsConfig->CpuPcieRpMultiVcEnabled[2] = 0x0;
-
         FspsConfig->Usb4CmMode = 0x0;
         FspsConfig->EnergyEfficientTurbo = 0x1;
-        FspsConfig->TimedMwait = 0x0;
         FspsConfig->PkgCStateLimit = 0x6;
         FspsConfig->PsysPmax = 0x0;
         FspsConfig->PchUnlockGpioPads = 0x1;
 
-        FspsConfig->PcieRpLtrMaxSnoopLatency[0] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[1] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[2] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[3] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[4] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[5] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[6] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[7] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[8] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[9] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[10] = 0x1003;
-        FspsConfig->PcieRpLtrMaxSnoopLatency[11] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[0] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[1] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[2] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[3] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[4] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[5] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[6] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[7] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[8] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[9] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[10] = 0x1003;
-        FspsConfig->PcieRpLtrMaxNoSnoopLatency[11] = 0x1003;
+        for (Index = 0; Index < 4; Index++) {
+          FspsConfig->CpuPcieRpLtrMaxSnoopLatency[Index]   = 0x1003;
+          FspsConfig->CpuPcieRpLtrMaxNoSnoopLatency[Index] = 0x1003;
+        }
+
         FspsConfig->CpuPcieRpGen3Uptp[0] = 0x7;
         FspsConfig->CpuPcieRpGen3Uptp[2] = 0x7;
         FspsConfig->CpuPcieRpGen4Uptp[1] = 0x8;
@@ -1325,13 +1212,20 @@ UpdateFspConfig (
         FspsConfig->CpuPcieRpGen5Uptp[1] = 0x7;
         FspsConfig->CpuPcieRpGen5Uptp[2] = 0x7;
         break;
+      case PLATFORM_ID_ADL_PS_DDR5_RVP:
+        FspsConfig->AmtEnabled = 0x1;
+        FspsConfig->FwProgress = 0x1;
+        FspsConfig->Irms[1] = 0x0;
+        break;
       default:
         break;
     }
   }
 
-  if (IsPchS () && FeaturePcdGet (PcdTccEnabled)) {
-    Status = TccModePostMemConfig (FspsUpd);
+  if (IsPchS () || IsPchN()) {
+    if (FeaturePcdGet (PcdTccEnabled)) {
+      Status = TccModePostMemConfig (FspsUpd);
+    }
   }
   if (FeaturePcdGet (PcdEnablePciePm)) {
     StoreRpConfig (FspsConfig);

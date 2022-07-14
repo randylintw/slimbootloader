@@ -860,6 +860,10 @@ PlatformUpdateAcpiGnvs (
   PchNvs->CnviMode           = FspsConfig->CnviMode;
   PchNvs->CnviBtCore         = FspsConfig->CnviBtCore;
   PchNvs->CnviBtAudioOffload = FspsConfig->CnviBtAudioOffload;
+  switch (GetPlatformId ()) {
+    case PLATFORM_ID_ADL_P_DDR5_RVP:
+    PchNvs->CnviBtAudioOffload = 0x1;
+  }
   PchNvs->PsOnEnable         = FspsConfig->PsOnEnable;
   PchNvs->CnviPortId         = PID_CNVI;
   PchNvs->IclkPid            = PID_ICLK;
@@ -1048,6 +1052,7 @@ PlatformUpdateAcpiGnvs (
     PlatformNvs->PcieSlot2RpNumber = 5;
     break;
   case PLATFORM_ID_ADL_P_DDR5_RVP:
+  case PLATFORM_ID_ADL_PS_DDR5_RVP:
     PlatformNvs->PcieSlot1WakeGpio = 0;
     PlatformNvs->PcieSlot1PowerEnableGpio = GPIO_VER2_LP_GPP_A22;
     PlatformNvs->PcieSlot1PowerEnableGpioPolarity = 0;
@@ -1090,7 +1095,7 @@ PlatformUpdateAcpiGnvs (
     PlatformNvs->WlanWakeGpio = GPIO_VER2_LP_GPP_D13;
     PlatformNvs->WlanRootPortNumber = 5;
     PlatformNvs->PL1LimitCSValue = 0x1194;
-
+    break;
   default:
     DEBUG ((DEBUG_ERROR, "Could not find PlatformNvs settings for PlatformId 0x%X!\n", GetPlatformId ()));
     break;
@@ -1190,9 +1195,12 @@ PlatformUpdateAcpiGnvs (
 
     // If TCC is enabled, use the TCC policy from subregion
     PlatformData = (PLATFORM_DATA *)GetPlatformDataPtr ();
-    if((PlatformData != NULL) && PlatformData->PlatformFeatures.TccDsoTuning){
+    if ((PlatformData != NULL) && PlatformData->PlatformFeatures.TccDsoTuning) {
       PlatformNvs->Rtd3Support    = PlatformData->PlatformFeatures.TccRtd3Support;
       PlatformNvs->LowPowerS0Idle = PlatformData->PlatformFeatures.TccLowPowerS0Idle;
+    } else {
+      PlatformNvs->Rtd3Support = 0;
+      PlatformNvs->LowPowerS0Idle = 0;
     }
   }
 

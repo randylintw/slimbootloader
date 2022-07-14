@@ -222,7 +222,7 @@ UpdateFspConfig (
 
   DebugPort = GetDebugPort ();
   if (DebugPort < GetPchMaxSerialIoUartControllersNum ()) {
-    Fspmcfg->PcdDebugInterfaceFlags = BIT4;
+    Fspmcfg->PcdDebugInterfaceFlags = BIT4 | BIT5;
     Fspmcfg->SerialIoUartDebugControllerNumber = DebugPort;
     Fspmcfg->SerialIoUartDebugMode = 4;
   } else {
@@ -524,6 +524,7 @@ UpdateFspConfig (
     break;
   case PLATFORM_ID_ADL_N_DDR5_CRB:
     // DP + DP
+    DEBUG((DEBUG_INFO, "PLATFORM_ID_ADL_N_DDR5_CRB board Id %x .....\n", PlatformId));
     CopyMem(SaDisplayConfigTable, (VOID *)(UINTN)mAdlNddr5CrbRowDisplayDdiConfig, sizeof(mAdlNddr5CrbRowDisplayDdiConfig));
     break;
   case PLATFORM_ID_ADL_N_LPDDR5_RVP:
@@ -561,12 +562,11 @@ UpdateFspConfig (
     Fspmcfg->SiSkipOverrideBootModeWhenFwUpdate = TRUE;
 #endif
   }
-#ifndef PLATFORM_ADLN
+
     Fspmcfg->WRDS = 0x1;
-#endif
   if (IsPchLp ()) {
     Fspmcfg->DdiPortAConfig = 0x1;
-    Fspmcfg->WdtDisableAndLock = 0x1;
+    Fspmcfg->WdtDisableAndLock = 0x0;
     Fspmcfg->FirstDimmBitMask = 0x0;
     switch (GetPlatformId ()) {
       case PLATFORM_ID_ADL_P_LP4_RVP:
@@ -587,11 +587,16 @@ UpdateFspConfig (
         Fspmcfg->PcieClkReqGpioMux[9] = 0x796e9000;
         Fspmcfg->TcssXdciEn = 0x1;
         Fspmcfg->Ddr4OneDpc = 0x3;
+        Fspmcfg->DmiHweq = 0x2;
+        Fspmcfg->FirstDimmBitMaskEcc = 0x0;
         break;
       case PLATFORM_ID_ADL_PS_DDR5_RVP:
         Fspmcfg->DdiPortBHpd = 0x1;
         Fspmcfg->DmiHweq = 0x2;
         Fspmcfg->PcieClkReqGpioMux[9] = 0x796e9000;
+        Fspmcfg->PrmrrSize = 0x200000;
+        Fspmcfg->SkipCpuReplacementCheck = 0x0;
+        Fspmcfg->FirstDimmBitMaskEcc = 0x0;
         break;
       case PLATFORM_ID_ADL_N_DDR5_CRB:
         Fspmcfg->CpuPcieRpEnableMask = 0x0;
@@ -620,9 +625,13 @@ UpdateFspConfig (
   Fspmcfg->Lfsr1Mask      = 0xb;
   Fspmcfg->RefreshPanicWm = 0x8;
   Fspmcfg->RefreshHpWm    = 0x7;
+
   // Tcc enabling
-  if (IsPchS () && FeaturePcdGet (PcdTccEnabled)) {
-    TccModePreMemConfig (FspmUpd);
+  if (IsPchS () || IsPchN()) {
+    if (FeaturePcdGet (PcdTccEnabled)) {
+      Fspmcfg->WdtDisableAndLock = 0x0;
+      TccModePreMemConfig (FspmUpd);
+    }
   }
   // S0ix is disabled if TSN is enabled.
   FeaturesCfgData = (FEATURES_CFG_DATA *) FindConfigDataByTag (CDATA_FEATURES_TAG);
@@ -648,6 +657,20 @@ UpdateFspConfig (
       Fspmcfg->PchHdaAudioLinkHdaEnable  = 0;
       ZeroMem (Fspmcfg->PchHdaAudioLinkDmicEnable, sizeof (Fspmcfg->PchHdaAudioLinkDmicEnable));
       DEBUG ((DEBUG_INFO, "Stage 1B S0ix config applied.\n"));
+    }
+  }
+
+  //
+  // Enable ISH incase if UFS is enabled.
+  //
+  if ((SiCfgData != NULL) && ((SiCfgData->PchUfsEnable[0] == 1) || (SiCfgData->PchUfsEnable[1] == 1))) {
+    if (IsPchLp ()) {
+      switch (GetPlatformId ()) {
+        case PLATFORM_ID_ADL_P_LP4_RVP:
+        case PLATFORM_ID_ADL_P_LP5_RVP:
+        case PLATFORM_ID_ADL_P_DDR5_RVP:
+          Fspmcfg->PchIshEnable       = 1;
+      }
     }
   }
 }

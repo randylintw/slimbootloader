@@ -9,11 +9,11 @@
 #include <PlatformData.h>
 #include <Library/MeExtMeasurementLib.h>
 #include "Stage2BoardInitLib.h"
-#include "GpioTableAdlPsPostMem.h"
 #include "GpioTableAdlNPostMem.h"
 #include "GpioTableAdlTsn.h"
 #include <Library/PciePm.h>
 #include <Library/PlatformInfo.h>
+#include "SioChip.h"
 
 GLOBAL_REMOVE_IF_UNREFERENCED UINT8    mBigCoreCount;
 GLOBAL_REMOVE_IF_UNREFERENCED UINT8    mSmallCoreCount;
@@ -27,7 +27,6 @@ STATIC S3_SAVE_REG mS3SaveReg = {
   { BL_PLD_COMM_SIG, S3_SAVE_REG_COMM_ID, 1, 0 },
   { { REG_TYPE_IO, WIDE32, { 0, 0}, (ACPI_BASE_ADDRESS + R_ACPI_IO_SMI_EN), 0x00000000 } }
 };
-
 
 /**
   Create OS config data support HOB.
@@ -91,6 +90,58 @@ BuildOsConfigDataHob (
     Status = PcdSet32S (PcdPayloadReservedMemSize, PldRsvdMemSize + MemorySize);
     ASSERT_EFI_ERROR (Status);
   }
+  return EFI_SUCCESS;
+}
+
+/**
+  Create Csme Boot time HOB.
+
+  @param[out]  CsmeBootTimeData       pointer to CSME_PERFORMANCE_INFO structure
+
+  @retval EFI_SUCCESS           OS config data HOB built
+  @retval EFI_NOT_FOUND         Loader Global data not found
+  @retval EFI_OUT_OF_RESOURCES  Could not build HOB
+**/
+EFI_STATUS
+UpdateCsmeBootPerfHob (
+  OUT CSME_PERFORMANCE_INFO  *CsmeBootTimeData
+  )
+{
+  UINT32      *EarlyBootData;
+  UINT32      EarlyBootDataLength;
+  UINT32      EarlyBootDataVersion;
+  UINT32      AllocatedDataLength;
+  EFI_STATUS  Status;
+
+  EarlyBootData = NULL;
+  EarlyBootDataLength = 0;
+
+  if (CsmeBootTimeData == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  //
+  // Memory allocated for boot data is passed through BootDataLength
+  //
+  AllocatedDataLength = CsmeBootTimeData->BootDataLength;
+
+  Status = HeciGetEarlyBootPerfData (&EarlyBootData, &EarlyBootDataLength, &EarlyBootDataVersion);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "Obtaining CSME Boot performance data failed with status: %r\n", Status));
+    return Status;
+  } else {
+    DEBUG ((DEBUG_INFO, "Found CSME Boot performance data!\n"));
+  }
+
+  if (EarlyBootDataLength > AllocatedDataLength) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+
+  CsmeBootTimeData->Revision = 1;
+  CsmeBootTimeData->BootDataVersion = EarlyBootDataVersion;
+  CsmeBootTimeData->BootDataLength = EarlyBootDataLength;
+  CopyMem (CsmeBootTimeData->BootPerformanceData, EarlyBootData, EarlyBootDataLength * sizeof (UINT32));
+
   return EFI_SUCCESS;
 }
 
@@ -229,18 +280,16 @@ BoardInit (
   VOID                      *FspHobList;
   SILICON_CFG_DATA          *SiCfgData;
   BL_SW_SMI_INFO            *BlSwSmiInfo;
+  FEATURES_DATA             *FeatureCfgData;
 
   switch (InitPhase) {
   case PreSiliconInit:
     EnableLegacyRegions ();
     switch (GetPlatformId ()) {
-      case BoardIdAdlPSDdr5Rvp:
-        ConfigureGpio (CDATA_NO_TAG, sizeof (mGpioTablePostMemAdlPsDdr5Rvp) / sizeof (mGpioTablePostMemAdlPsDdr5Rvp[0]), (UINT8*)mGpioTablePostMemAdlPsDdr5Rvp);
-        break;
-      case BoardIdAdlNDdr5Crb:
+      case PLATFORM_ID_ADL_N_DDR5_CRB:
         ConfigureGpio (CDATA_NO_TAG, sizeof (mGpioTablePostMemAdlNDdr5Crb) / sizeof (mGpioTablePostMemAdlNDdr5Crb[0]), (UINT8*)mGpioTablePostMemAdlNDdr5Crb);
         break;
-      case BoardIdAdlNLp5Rvp:
+      case PLATFORM_ID_ADL_N_LPDDR5_RVP:
         ConfigureGpio (CDATA_NO_TAG, sizeof (mGpioTablePostMemAdlNLpddr5Rvp) / sizeof (mGpioTablePostMemAdlNLpddr5Rvp[0]), (UINT8*)mGpioTablePostMemAdlNLpddr5Rvp);
         break;
       default:
@@ -285,14 +334,17 @@ BoardInit (
     Status = PcdSet32S (PcdFuncCpuInitHook, (UINT32)(UINTN) PlatformCpuInit);
 
     if (PcdGetBool (PcdFastBootEnabled) == FALSE) {
-      Status = HsPhyLoadAndInit ();
-      if (EFI_ERROR (Status)) {
-        DEBUG ((DEBUG_WARN, "HsPhyInit failure, %r\n", Status));
+      if (IsPchS ()) {
+        Status = HsPhyLoadAndInit ();
+        if (EFI_ERROR (Status)) {
+          DEBUG ((DEBUG_WARN, "HsPhyInit failure, %r\n", Status));
+        }
       }
     }
 
     break;
   case PostSiliconInit:
+    FeatureCfgData = (FEATURES_DATA *)FindConfigDataByTag (CDATA_FEATURES_TAG);
     if (IsWdtFlagsSet(WDT_FLAG_TCC_DSO_IN_PROGRESS)) {
       WdtDisable (WDT_FLAG_TCC_DSO_IN_PROGRESS);
     }
@@ -324,6 +376,10 @@ BoardInit (
     if (FeaturePcdGet (PcdSmbiosEnabled)) {
       InitializeSmbiosInfo ();
     }
+    if (FeatureCfgData != NULL && FeatureCfgData->Sio == 1){
+      SioInit();
+    }
+
     break;
   case PostPciEnumeration:
     if (FeaturePcdGet (PcdEnablePciePm)) {
@@ -738,6 +794,8 @@ PlatformUpdateHobInfo (
     UpdateSmmInfo (HobInfo);
   } else if (Guid == &gLoaderPlatformInfoGuid) {
     UpdateLoaderPlatformInfo (HobInfo);
+  } else if (Guid == &gCsmePerformanceInfoGuid) {
+    UpdateCsmeBootPerfHob (HobInfo);
   }
 }
 
