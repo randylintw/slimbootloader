@@ -86,6 +86,11 @@ GLOBAL_REMOVE_IF_UNREFERENCED GPIO_INIT_CONFIG mGpioTablePreMemEhlFusa[] =
 
 };
 
+GLOBAL_REMOVE_IF_UNREFERENCED GPIO_INIT_CONFIG mGpioTableEhlAudioCodec[] =
+{
+  {GPIO_VER3_GPP_B15, {GpioPadModeGpio, GpioHostOwnGpio, GpioDirInInv, GpioOutDefault, GpioIntEdge|GpioIntApic, GpioPlatformReset, GpioTermNone, GpioPadConfigUnlock}},  //CODEC_INT_N
+};
+
 GLOBAL_REMOVE_IF_UNREFERENCED GPIO_INIT_CONFIG mEhlPchTsnDeviceGpioTable[] =
 {
   {GPIO_VER3_GPP_C17, {GpioPadModeNative1, GpioHostOwnDefault, GpioDirOut,    GpioOutDefault,   GpioIntDis, GpioResetDefault,  GpioTermNone}},  //RGMII2_MDC

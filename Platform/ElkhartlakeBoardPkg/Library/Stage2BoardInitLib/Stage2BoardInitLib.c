@@ -730,6 +730,8 @@ BoardInit (
     }
 
     ConfigureGbeGpio ();
+        DEBUG ((DEBUG_INFO, "ConfigureGpio for audio\n"));
+ConfigureGpio (CDATA_NO_TAG, ARRAY_SIZE(mGpioTableEhlAudioCodec), (UINT8*)mGpioTableEhlAudioCodec);
 
     SpiConstructor ();
     if (GetBootMode() != BOOT_ON_FLASH_UPDATE) {
