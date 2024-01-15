@@ -178,13 +178,14 @@ class Board(BaseBoard):
                                          self.FWUPDATE_SIZE + self.CFGDATA_SIZE + self.KEYHASH_SIZE
 
         self.ENABLE_TCC = 0
-        self.ENABLE_TSN = 0
+        self.ENABLE_TSN = 1
         if self.ENABLE_TSN:
             self.TMAC_SIZE = 0x00001000
             self.SIIPFW_SIZE += self.TMAC_SIZE
 
         self.NON_REDUNDANT_SIZE   = 0x3BF000 + self.SIIPFW_SIZE
-        self.NON_VOLATILE_SIZE    = 0x001000
+        self.NON_VOLATILE_SIZE    = 0x003000
+        self.OEMDATA_SIZE = 0x00002000
         self.SLIMBOOTLOADER_SIZE  = (self.TOP_SWAP_SIZE + self.REDUNDANT_SIZE) * 2 + \
                                     self.NON_REDUNDANT_SIZE + self.NON_VOLATILE_SIZE
         self.SLIMBOOTLOADER_SIZE  = ((self.SLIMBOOTLOADER_SIZE + 0xFFFFF) & ~0xFFFFF)
@@ -363,7 +364,20 @@ class Board(BaseBoard):
               ('TMAC', TsnSubRegion, 'Lz4', container_list_auth_type, 'KEY_ID_CONTAINER_COMP'+'_'+self._RSA_SIGN_TYPE, 0, self.TMAC_SIZE, 0),   # TSN MAC Address
             )
 
-        return [container_list]
+
+        CompFileOemData = os.path.join(bins, 'TsnSubRegion.bin')if os.path.exists(os.path.join(bins, 'TsnSubRegion.bin')) else ''
+
+        container_list2 = []
+    
+        container_list2.append (
+        # Name | Image File             |    CompressAlg  | AuthType                        | Key File                        | Region Align   | Region Size |  Svn Info
+        # ========================================================================================================================================================
+          ('SITS',      'SITSN.bin',          '',     container_list_auth_type,   'KEY_ID_CONTAINER'+'_'+self._RSA_SIGN_TYPE,        0,          0     ,        0),   # Container Header
+        )
+        container_list2.append (
+            ('TMAC', CompFileOemData, '', container_list_auth_type, 'KEY_ID_CONTAINER_COMP'+'_'+self._RSA_SIGN_TYPE, 0, 0, 0),
+        ) # content
+        return [container_list, container_list2]
 
     def GetOutputImages (self):
         # define extra images that will be copied to output folder
@@ -391,6 +405,7 @@ class Board(BaseBoard):
         img_list.extend ([
             ('NON_VOLATILE.bin', [
                 ('SBLRSVD.bin',    ''        , self.SBLRSVD_SIZE,  STITCH_OPS.MODE_FILE_NOP, STITCH_OPS.MODE_POS_TAIL),
+                ('SITSN.bin' , ''   , self.OEMDATA_SIZE, STITCH_OPS.MODE_FILE_PAD, STITCH_OPS.MODE_POS_TAIL),
                 ]
             ),
             ('NON_REDUNDANT.bin', [

@@ -780,11 +780,13 @@ UpdateFspConfig (
 
       TsnMacAddrBase      = NULL;
       TsnMacAddrSize      = 0;
-      Status = LoadComponent (SIGNATURE_32 ('I', 'P', 'F', 'W'), SIGNATURE_32 ('T', 'M', 'A', 'C'),
+      Status = LoadComponent (SIGNATURE_32 ('S', 'I', 'T', 'S'), SIGNATURE_32 ('T', 'M', 'A', 'C'),
                               (VOID **)&TsnMacAddrBase, &TsnMacAddrSize);
+    
+
       if (!EFI_ERROR(Status)) {
           TsnSubRegion = (TSN_MAC_ADDR_SUB_REGION*) TsnMacAddrBase;
-
+        DumpHex (2, 0, 100, TsnMacAddrBase);
         FspsConfig->PchTsnMacAddressHigh  = TsnSubRegion->MacConfigData.Port[0].MacAddr.U32MacAddr[1];
         FspsConfig->PchTsnMacAddressLow   = TsnSubRegion->MacConfigData.Port[0].MacAddr.U32MacAddr[0];
         FspsConfig->PchTsn1MacAddressHigh = TsnSubRegion->MacConfigData.Port[1].MacAddr.U32MacAddr[1];
