@@ -402,7 +402,7 @@
       help         : >
                      0- Disable, 1- Enable (Default) Azalia controller
       length       : 0x0001
-      value        : 0x0
+      value        : 0x1
   - PchHdaDspEnable :
       condition    : $(COND_S0IX_DIS)
       name         : Enable HD Audio DSP
@@ -411,7 +411,7 @@
       help         : >
                      Enable/disable HD Audio DSP feature.
       length       : 0x0001
-      value        : 0x00
+      value        : 0x01
   - PchHdaAudioLinkHdaEnable :
       condition    : $(COND_S0IX_DIS)
       name         : Enable HD Audio Link
