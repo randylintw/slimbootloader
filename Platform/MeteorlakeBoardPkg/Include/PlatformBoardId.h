@@ -61,8 +61,8 @@ Defines Platform BoardIds
 #define PLATFORM_ID_MTL_PS_DDR5_CRB           0x15
 #define BoardIdMtlPDdr5CRb                    0x1A
 #define PLATFORM_ID_MTL_P_DDR5_CRB            0x1A
-
-
+#define BoardIdMtlPDdr5Mcl                    0x1F
+#define PLATFORM_ID_MTL_P_DDR5_MCL            0x1A
 /** MTL backup
 #define TypeUnknown                         0x0
 #define TypeTrad                            0x1

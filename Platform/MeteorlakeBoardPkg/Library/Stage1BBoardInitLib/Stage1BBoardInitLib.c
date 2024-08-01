@@ -706,6 +706,13 @@ DEBUG_CODE_END();
       GPIOTableV2 = mGpioTablePreMemMtlPSbsCRBDimm;
       GpioInit (GPIOTableV2);
       break;
+    case BoardIdMtlPDdr5Mcl:
+      DEBUG ((DEBUG_ERROR, "The platform id is MCL:  0x%X!\n", GetPlatformId ()));
+      DEBUG ((DEBUG_ERROR, "GPIO table size: %x  \n",sizeof (mGpioTableMcl) / sizeof (mGpioTableMcl[0])));
+      MtlSocInstallCommunityAccess(CommunityAccess);
+      GPIOTableV2 = mGpioTableMcl;
+      GpioInit (GPIOTableV2);
+      break;
     default:
       DEBUG ((DEBUG_ERROR, "Could not find pre-mem GPIO for PlatformId 0x%X!\n", GetPlatformId ()));
       break;
