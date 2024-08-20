@@ -66,7 +66,7 @@ class Board(BaseBoard):
         self.HAVE_PSD_TABLE       = 1
         self.ENABLE_VTD           = 1
         # To enable source debug, set 1 to self.ENABLE_SOURCE_DEBUG
-        self.ENABLE_SOURCE_DEBUG  = 0
+        self.ENABLE_SOURCE_DEBUG  = 1
         # If ENABLE_SOURCE_DEBUG is disabled, SKIP_STAGE1A_SOURCE_DEBUG will be ignored
         self.SKIP_STAGE1A_SOURCE_DEBUG  = 0
         self.ENABLE_SPLASH        = 1
@@ -120,13 +120,13 @@ class Board(BaseBoard):
             self.STAGE1B_SIZE         = 0x000B7000
             self.STAGE2_SIZE          = 0x00080000
             self.STAGE2_FD_SIZE       = 0x000E0000
-            self.PAYLOAD_SIZE         = 0x00026000
+            self.PAYLOAD_SIZE         = 0x00016000
         else:
-            self.STAGE1A_SIZE         = 0x00016000
+            self.STAGE1A_SIZE         = 0x00046000
             self.STAGE1B_SIZE         = 0x00180000
             self.STAGE2_SIZE          = 0x00110000
             self.STAGE2_FD_SIZE       = 0x00200000
-            self.OS_LOADER_FD_SIZE    = 0x00059000
+            self.OS_LOADER_FD_SIZE    = 0x000B9000
             self.PAYLOAD_SIZE         = 0x00080000
 
         if self.ENABLE_SOURCE_DEBUG:
@@ -166,7 +166,7 @@ class Board(BaseBoard):
         self.FWUPDATE_SIZE        = 0x00020000 if self.ENABLE_FWU else 0
         self.OS_LOADER_FD_NUMBLK  = self.OS_LOADER_FD_SIZE // self.FLASH_BLOCK_SIZE
 
-        self.TOP_SWAP_SIZE        = 0x080000
+        self.TOP_SWAP_SIZE        = 0x0C0000
         self.REDUNDANT_SIZE       = 0x360000
 
         self.SIIPFW_SIZE = 0x1000
