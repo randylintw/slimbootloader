@@ -33,6 +33,7 @@
 #include <Library/WatchDogTimerLib.h>
 #include <PlatformData.h>
 #include <Library/ContainerLib.h>
+#include "HdaVerbTable.h"
 #include "TsnSubRegion.h"
 #include <Library/PciePm.h>
 #include <IndustryStandard/UefiTcgPlatform.h>
@@ -822,6 +823,9 @@ UpdateFspConfig (
     FspsConfig->PcieRpNonSnoopLatencyOverrideMode[Index] = 0x2;
   }
 
+  // Set VerbTable is disabled by default. Enable it only when specified by config data.
+  FspsConfig->PchHdaVerbTablePtr = (UINT32)(UINTN) &HdaVerbTableAlc897;
+  FspsConfig->PchHdaVerbTableEntryNum = 1;
   if(GetPayloadId () == 0) {
     // Disable SMI sources
     SmiEn = IoRead32((UINT32)(ACPI_BASE_ADDRESS + R_ACPI_IO_SMI_EN));
