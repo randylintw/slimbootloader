@@ -17,6 +17,7 @@
 #include <PlatformBoardId.h>
 #include <Register/Cpuid.h>
 #include <Library/BoardSupportLib.h>
+#include <Library/MemoryAllocationLib.h>
 #include <IgdOpRegionDefines.h>
 #include <PchLimits.h>
 #include <ConfigDataDefs.h>
@@ -559,6 +560,8 @@ UpdateFspConfig (
   EFI_STATUS                  Status;
   VBIOS_VBT_STRUCTURE         *VbtPtr;
   EFI_PLATFORM_FIRMWARE_BLOB  TsnCfgBlob;
+  UINT32                    *HdaVerbTablePtr;
+  UINT8                     HdaVerbTableNum;
 
   Address              = 0;
   FspsUpd              = (FSPS_UPD *) FspsUpdPtr;
@@ -824,8 +827,17 @@ UpdateFspConfig (
   }
 
   // Set VerbTable is disabled by default. Enable it only when specified by config data.
-  FspsConfig->PchHdaVerbTablePtr = (UINT32)(UINTN) &HdaVerbTableAlc897;
-  FspsConfig->PchHdaVerbTableEntryNum = 1;
+
+   HdaVerbTablePtr = (UINT32 *) AllocateZeroPool (2 * sizeof (UINT32));  // max 6 tables supported for now
+  if (HdaVerbTablePtr == NULL) {
+    return;
+  }
+  HdaVerbTableNum = 0;
+  HdaVerbTablePtr[HdaVerbTableNum++]   = (UINT32)(UINTN) &HdaVerbTableAlc897;
+
+  FspsConfig->PchHdaVerbTablePtr      = (UINT32)(UINTN) HdaVerbTablePtr;
+  FspsConfig->PchHdaVerbTableEntryNum = HdaVerbTableNum;
+
   if(GetPayloadId () == 0) {
     // Disable SMI sources
     SmiEn = IoRead32((UINT32)(ACPI_BASE_ADDRESS + R_ACPI_IO_SMI_EN));
