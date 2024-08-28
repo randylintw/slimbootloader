@@ -122,11 +122,11 @@ class Board(BaseBoard):
             self.STAGE2_FD_SIZE       = 0x000E0000
             self.PAYLOAD_SIZE         = 0x00026000
         else:
-            self.STAGE1A_SIZE         = 0x00016000
+            self.STAGE1A_SIZE         = 0x00026000
             self.STAGE1B_SIZE         = 0x00180000
             self.STAGE2_SIZE          = 0x00110000
             self.STAGE2_FD_SIZE       = 0x00200000
-            self.OS_LOADER_FD_SIZE    = 0x00059000
+            self.OS_LOADER_FD_SIZE    = 0x000C9000
             self.PAYLOAD_SIZE         = 0x00080000
 
         if self.ENABLE_SOURCE_DEBUG:

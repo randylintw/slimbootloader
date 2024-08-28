@@ -631,7 +631,7 @@
       help         : >
                      To 'opt-in' for debug, please select 'Enabled' with the desired debug probe type. Enabling this BIOS option may alter the default value of other debug-related BIOS options.\Manual- Do not use Platform Debug Consent to override other debug-relevant policies, but the user must set each debug option manually, aimed at advanced users.\nNote- DCI OOB (aka BSSB) uses CCA probe;[DCI OOB+DbC] and [USB2 DbC] have the same setting.
       length       : 0x01
-      value        : 0x0
+      value        : 0x1
   - DciEn        :
       name         : DCI Enable
       type         : Combo
@@ -639,7 +639,7 @@
       help         : >
                      Determine if to enable DCI debug from host
       length       : 0x01
-      value        : 0x0
+      value        : 0x1
   - !expand { MEM_TMPL : [ Training ] }
   - RMT          :
       name         : Rank Margin Tool
